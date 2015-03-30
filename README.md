@@ -49,8 +49,8 @@ design!
 ## MIA - CLI Tool
 
 ### Setup instructions for non-developers:
-1.  Install any version of Python if not already installed. Test using:
-    `python --version`
+1.  Install Python 3 if not already installed. Test using:
+    `python3 --version`
 
 2.  Install [`pip`](https://pip.pypa.io/en/latest/index.html) (for Python 3) if not already installed. Test using:
     `pip3 --version`
@@ -68,8 +68,8 @@ design!
     ```
 
 ### Setup instructions for developers:
-1.  Install any version of Python if not already installed. Test using:
-    `python --version`
+1.  Install Python 3 if not already installed. Test using:
+    `python3 --version`
 
 2.  Install [`python-virtualenv`](https://virtualenv.pypa.io/en/latest/installation.html) if not already installed. Test using:
     `virtualenv --version`
@@ -104,10 +104,6 @@ design!
 
 6.  Now you can start changing files (python code or template files) and the
     changes will be visible next time you execute the `mia` command.
-
-    Notes:
-    * If you are using PyCharm you need to mark the "src" folder as containing
-    "Sources" in the "Project Structure" settings.
 
 
 ## Compatibility
