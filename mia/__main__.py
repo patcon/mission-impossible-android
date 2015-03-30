@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 MIA - Mission Impossible: Hardening Android for Security and Privacy
 
@@ -32,8 +31,6 @@ Available commands:
 See 'mia help <command>' for more information on a specific command.
 
 """
-__author__ = 'The MIA Team'
-__version__ = 'mia 0.0.1'
 
 # Get the path of the mission-impossible-android project.
 import os
@@ -51,6 +48,7 @@ sys.path.append(ROOT)
 from docopt import docopt
 
 # Import custom helpers.
+from mia import (__version__)
 from mia.helpers.utils import *
 
 
@@ -96,7 +94,7 @@ def delegate_command(command_name, command_args):
         print(msg % command_name)
 
 
-if __name__ == '__main__':
+def main():
     # Read the CLI arguments.
     # Use options_first to force reading the global options only.
     global_args = docopt(__doc__, version=__version__, options_first=True)
@@ -114,3 +112,9 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print('\n' + 'Exiting...')
         pass
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
