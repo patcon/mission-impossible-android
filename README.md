@@ -30,7 +30,10 @@ design!
 1.  Connect your device via USB, authorizing as necessary.
 
 2.  Provide **temporary root access via ADB**, can be revoked later.
-    ```
+
+3.  Create a definition, customizing as necessary, see the template specific
+    [README.md](templates/README.md), build a custom update.zip file and install onto the device:
+    ```bash
     mia definition create my-phone
     mia build my-phone
     mia install my-phone
@@ -44,16 +47,29 @@ design!
 
 
 ## MIA - CLI Tool
-### Requirements:
 
-* Python 3
-* [docopt](https://github.com/docopt/docopt)
-* [PyYAML](http://pyyaml.org/wiki/PyYAML)
+### Setup instructions for non-developers:
+1.  Install Python 3 if not already installed. Test using:
+    `python3 --version`
 
+2.  Install [`pip`](https://pip.pypa.io/en/latest/index.html) (for Python 3) if not already installed. Test using:
+    `pip3 --version`
 
-### Setup instructions:
+3.  Install the `mia` CLI tool:
+    ```bash
+    sudo pip3 install git+https://github.com/patcon/mission-impossible-android.git
+    ```
+    NOTE: You can follow the setup instructions for developers if you don't want
+          to install the script globally or if you don't have `sudo` access.
 
-1.  Install Python 3 if not already installed. Test using: `python3 --version`
+4.  Test if the CLI tool is working properly.
+    ```bash
+    mia --help
+    ```
+
+### Setup instructions for developers:
+1.  Install Python 3 if not already installed. Test using:
+    `python3 --version`
 
 2.  Install the docopt and PyYAML modules:
 
@@ -67,7 +83,7 @@ design!
       `zypper install python3-docopt python3-PyYAML`
 
 3.  Clone the repository:
-    ```
+    ```bash
     git clone https://github.com/patcon/mission-impossible-android.git
     ```
 
@@ -82,9 +98,48 @@ design!
       `~/mission-impossible-android/tools/mia` instead of `mia`
 
 5. Test if the tool is working properly.
-    ```
+    ```bash
     mia --help
     ```
+
+### Setup instructions for developers (with virtualenv):
+1.  Install Python 3 if not already installed. Test using:
+    `python3 --version`
+
+2.  Install [`python-virtualenv`](https://virtualenv.pypa.io/en/latest/installation.html) if not already installed. Test using:
+    `virtualenv --version`
+
+3.  Clone the repository:
+    ```bash
+    git clone https://github.com/patcon/mission-impossible-android.git
+    ```
+
+4.  Setup the virtual environment and install the dependencies:
+    ```bash
+    # Prepare the Python Virtual Environment.
+    make prepare
+
+    # Activate the newly created virtualenv.
+    source bin/activate
+
+    # Install mia once inside the Virtual Environment.
+    pip install -e .
+    ```
+
+    Notes:
+    * Every time you need to use mia make sure you activate the virtualenv.
+    * You can exit the virtualenv by executing `deactivate`
+    * To recreate the virtual environment from scratch you can run:
+      `deactivate && make clean`
+
+5.  Test if the CLI tool is working properly:
+    ```bash
+    mia --help
+    ```
+
+6.  Now you can start changing files (python code or template files) and the
+    changes will be visible next time you execute the `mia` command.
+
 
 ## Compatibility
 Devices currently available for testing:

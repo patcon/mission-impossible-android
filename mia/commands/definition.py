@@ -25,9 +25,12 @@ Notes:
 """
 
 import re
+import os
 import shutil
+import sys
 from urllib.request import urlretrieve
 import xml.etree.ElementTree as ElementTree
+from pkg_resources import Requirement, resource_filename, resource_isdir
 
 # Import custom helpers.
 from mia.helpers.android import *
@@ -94,15 +97,19 @@ def create_definition():
                   handler.args['<definition>'])
             sys.exit(1)
 
+    # Get the template name.
     template = handler.args['--template']
-    template_path = os.path.join(handler.get_root_path(), 'templates', template)
-    print('Using template:\n - %s\n' % template_path)
+    template_rel_path = os.path.join('mia', 'templates', template)
 
     # Check if the template exists.
-    if not os.path.exists(template_path):
+    if not resource_isdir(Requirement.parse('mia'), template_rel_path):
         # raise Exception('Template "%s" does not exist!' % template)
         print('ERROR: Template "%s" does not exist!' % template)
         sys.exit(1)
+
+    template_path = resource_filename(Requirement.parse('mia'),
+                                      template_rel_path)
+    print('Using template:\n - %s\n' % template_path)
 
     # Make sure the definitions folder exists.
     os.makedirs(os.path.join(handler.get_workspace_path(), 'definitions'),
