@@ -33,7 +33,7 @@ design!
 
 3.  Create a definition, customizing as necessary, see the template specific
     [README.md](templates/README.md), build a custom update.zip file and install onto the device:
-    ```
+    ```bash
     mia definition create my-phone
     mia build my-phone
     mia install my-phone
@@ -68,6 +68,41 @@ design!
     ```
 
 ### Setup instructions for developers:
+1.  Install Python 3 if not already installed. Test using:
+    `python3 --version`
+
+2.  Install the docopt and PyYAML modules:
+
+    * Using Python Package Index [pip](https://pip.pypa.io/en/latest/index.html):
+      `pip install docopt pyyaml`
+
+    * Or using apt-get on Ubuntu:
+      `apt-get install python3-docopt python3-yaml`
+
+    * Or using zypper on openSUSE:
+      `zypper install python3-docopt python3-PyYAML`
+
+3.  Clone the repository:
+    ```bash
+    git clone https://github.com/patcon/mission-impossible-android.git
+    ```
+
+4.  (optional) Add the tools folder to the PATH environment variable. This will
+    let you run the tool from any folder in your system.
+    `export PATH=$PATH:$HOME/mission-impossible-android/tools`
+
+    * Make sure to replace `$HOME/mission-impossible-android/tools` with the
+      actual path of the tools folder.
+    * If you skip this step you will need to use an absolute or relative
+      path to the CLI Tool. Eg: `./tools/mia` or
+      `~/mission-impossible-android/tools/mia` instead of `mia`
+
+5. Test if the tool is working properly.
+    ```bash
+    mia --help
+    ```
+
+### Setup instructions for developers (with virtualenv):
 1.  Install Python 3 if not already installed. Test using:
     `python3 --version`
 
