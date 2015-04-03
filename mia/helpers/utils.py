@@ -239,7 +239,7 @@ def update_settings(settings_file, changes):
 
     try:
         # Define a custom order of the sections
-        order = ['general', 'other_apps', 'fdroid_apps']
+        order = ['general', 'apps']
         for section in settings.keys():
             if section not in order:
                 order.append(section)

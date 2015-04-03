@@ -229,6 +229,13 @@ def get_apps_lock_info(repo_info, repo_apps):
     print('Looking for APKs in the "%s" repository' % repo_info['name'])
     warnings_count = 0
     for key, app_info in enumerate(repo_apps):
+
+        # If download url provided directly, skip xml parse
+        if 'url' in app_info:
+            app_info['package_url'] = "%s" % app_info['url']
+            app_info['package_name'] = re.match(r'.+/(.+\.apk)$', app_info['url'], re.I).group(1)
+            continue
+
         application = _xml_get_application_tag(tree_root, app_info['name'])
 
         if application is None:
@@ -304,29 +311,18 @@ def download_apps():
     # Read the definition apps lock data.
     lock_data = handler.get_definition_apps_lock_data()
 
-    # Path where to download the APK files.
-    user_apps_folder = os.path.join(handler.get_definition_path(), 'user-apps')
-    if not os.path.isdir(user_apps_folder):
-        os.makedirs(user_apps_folder, mode=0o755)
-
     for repo_group in lock_data:
         print('Downloading %s...' % repo_group)
         for apk_info in lock_data[repo_group]:
             print(' - downloading: %s' % apk_info['package_url'])
-            apk_path = os.path.join(user_apps_folder, apk_info['package_name'])
+            download_dir = apk_info.get('path', "user-apps")
+            download_path = os.path.join(handler.get_definition_path(), download_dir)
+            if not os.path.isdir(download_path):
+                os.makedirs(download_path, mode=0o755)
+            apk_path = os.path.join(download_path, apk_info['package_name'])
             path, http_message = urlretrieve(apk_info['package_url'], apk_path)
             print('   - downloaded %s' %
                   format_file_size(http_message["Content-Length"]))
-
-    print('Downloading other_apps...')
-    for app_info in settings['other_apps']:
-        print(' - downloading: %s' % app_info['url'])
-        apk_path = os.path.join(user_apps_folder,
-                                os.path.basename(app_info['url']))
-        path, http_message = urlretrieve(app_info['url'], apk_path)
-        print('   - downloaded %s' %
-              format_file_size(http_message["Content-Length"]))
-
 
 def download_os():
     print('\nNOTE: Command not finished yet; See instructions!\n')

@@ -32,25 +32,19 @@ update_content:
   - src: other/firstboot.sh
     dst: data/.firstboot.sh
 
-
-# Apps with direct download link.
-other_apps:
-  - name: F-Droid
-    url: https://f-droid.org/repo/org.fdroid.fdroid_810.apk
-
-
 # A list of repositories for the F-Droid application.
 repositories:
   - name: F-Droid
     base_url: https://f-droid.org/repo
-    apps_key: fdroid_apps
-  - name: F-Droid Archive
-    base_url: https://f-droid.org/archive
-    apps_key: fdroid_archive_apps
-
+    apps_key: apps
 
 # Apps from the main F-Droid repository.
-fdroid_apps:
+apps:
+  - name: org.fdroid.fdroid
+    code: 830
+    path: system-apps
+  - name: info.guardianproject.orfox
+    url: https://guardianproject.info/builds/OrfoxFennec/2014-08-22_23-32-22/OrfoxFennec-debug.apk
   - name: com.artifex.mupdfdemo
     code: 55
   - name: com.csipsimple
@@ -78,7 +72,7 @@ fdroid_apps:
   - name: org.mariotaku.twidere
     code: 98
   - name: org.mozilla.fennec_fdroid
-    code: 360100
+    code: 370000
   - name: org.sufficientlysecure.keychain
     code: 31200
   - name: org.nick.cryptfs.passwdmanager
@@ -87,9 +81,5 @@ fdroid_apps:
     code: 6
   - name: org.torproject.android
     code: 133
-
-
-# Apps from the F-Droid Archive repository.
-fdroid_archive_apps:
   - name: org.videolan.vlc
-    code: 10104
+    code: 1020304
