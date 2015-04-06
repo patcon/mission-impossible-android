@@ -8,6 +8,9 @@ general:
   # Preferred CyanogenMod release version
   cm_release_version: M12
 
+defaults:
+  # The default repository for apps.
+  repository_id: fdroid
 
 # Mapping of the items in the definition and their place in the update archive.
 update_content:
@@ -34,9 +37,13 @@ update_content:
 
 # A list of repositories for the F-Droid application.
 repositories:
-  - name: F-Droid
-    base_url: https://f-droid.org/repo
-    apps_key: apps
+  - id: fdroid
+    name: F-Droid
+    url: https://f-droid.org/repo
+    fallback: fdroid_archive
+  - id: fdroid_archive
+    name: F-Droid Archive
+    url: https://f-droid.org/archive
 
 # Apps from the main F-Droid repository.
 apps:
