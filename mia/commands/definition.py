@@ -27,6 +27,7 @@ Notes:
 import re
 import shutil
 from urllib.request import urlretrieve
+from urllib.parse import urljoin
 import xml.etree.ElementTree as ElementTree
 
 # Import custom helpers.
@@ -173,18 +174,12 @@ def create_apps_lock_file():
     # Get the MIA handler singleton.
     handler = MiaHandler()
 
-    # Read the definition settings.
-    settings = handler.get_definition_settings()
-
-    # Generate APK lock files for all repositories.
-    lock_data = {}
-    for repo_info in settings['repositories']:
-        apps_key = repo_info['apps_key']
-        lock_data[apps_key] = get_apps_lock_info(repo_info, settings[apps_key])
+    # Get the APK lock data.
+    lock_data = get_apps_lock_info()
 
     definition_path = handler.get_definition_path()
     lock_file_path = os.path.join(definition_path, 'apps_lock.yaml')
-    print("Creating lock file:\n - %s\n" % lock_file_path)
+    print('Creating lock file:\n - %s\n' % lock_file_path)
 
     import yaml
     fd = open(lock_file_path, 'w')
@@ -202,103 +197,147 @@ def create_apps_lock_file():
         download_apps()
 
 
-def get_apps_lock_info(repo_info, repo_apps):
+def get_apps_lock_info():
     # Get the MIA handler singleton.
     handler = MiaHandler()
+
+    # Read the definition settings.
+    settings = handler.get_definition_settings()
+
+    if not settings['defaults']['repository_id']:
+        print('Missing default repository id.')
+        sys.exit(1)
 
     # Make sure the resources folder exists.
     os.makedirs(os.path.join(handler.get_workspace_path(), 'resources'),
                 mode=0o755, exist_ok=True)
 
-    index_path = os.path.join(handler.get_workspace_path(), 'resources',
-                              repo_info['apps_key'] + '.index.xml')
+    # Download and read info from the index.xml file of all repositories.
+    repositories_data = {}
+    for repo_info in settings['repositories']:
+        index_path = os.path.join(handler.get_workspace_path(), 'resources',
+                                  repo_info['id'] + '.index.xml')
 
-    # Download the repository index.xml file.
-    if not os.path.isfile(index_path):
-        index_url = '%s/%s' % (repo_info['base_url'], 'index.xml')
-        print('Downloading the %s repository information from:\n - %s' %
-              (repo_info['name'], index_url))
-        urlretrieve(index_url, index_path)
+        if not os.path.isfile(index_path):
+            index_url = '%s/%s' % (repo_info['url'], 'index.xml')
+            print('Downloading the %s repository information from:\n - %s' %
+                  (repo_info['name'], index_url))
+            urlretrieve(index_url, index_path)
 
-    # Parse the repository index file and return the XML root.
-    xml_tree = ElementTree.parse(index_path)
-    if not xml_tree:
-        print('Error parsing file:\n - %s' % index_path)
-    tree_root = xml_tree.getroot()
+        # Parse the repository index file and return the XML root.
+        xml_tree = ElementTree.parse(index_path)
+        if not xml_tree:
+            print('Error parsing file:\n - %s' % index_path)
+        repo_info['tree'] = xml_tree.getroot()
 
-    print('Looking for APKs in the "%s" repository' % repo_info['name'])
-    warnings_count = 0
-    for key, app_info in enumerate(repo_apps):
+        repositories_data[repo_info['id']] = repo_info
 
-        # If download url provided directly, skip xml parse
+    apps_list = []
+    warnings_found = False
+    print('Looking for APKs:')
+    for key, app_info in enumerate(settings['apps']):
+        # Add app to list if download url was provided directly.
         if 'url' in app_info:
-            app_info['package_url'] = "%s" % app_info['url']
-            app_info['package_name'] = re.match(r'.+/(.+\.apk)$', app_info['url'], re.I).group(1)
+            app_info['package_name'] = os.path.basename(app_info['url'])
+            app_info['package_url'] = app_info['url']
+            del app_info['url']
+
+            if 'name' not in app_info:
+                # Use file name for application name.
+                app_info['name'] = os.path.splitext(app_info['package_name'])[0]
+
+            print(' - adding `%s`' % app_info['package_name'])
+            apps_list.append(app_info)
             continue
 
-        application = _xml_get_application_tag(tree_root, app_info['name'])
+        # Lookup the version code in the repository index.xml.
+        if 'code' in app_info:
+            # Use the default repository if no repo has been provided.
+            if 'repo' not in app_info:
+                app_info['repo'] = settings['defaults']['repository_id']
 
-        if application is None:
-            print(' - no such app: %s' % app_info['name'])
-            warnings_count += 1
-            del repo_apps[key]
-            continue
+            # Get the application info.
+            app_info = _xml_get_app_lock_info(repositories_data, app_info)
+            if app_info is not None:
+                repo_name = repositories_data[app_info['repository_id']]['name']
+                msg = ' - found `%s` in the %s repository.'
+                print(msg % (app_info['package_name'], repo_name))
+                apps_list.append(app_info)
+                continue
 
-        if handler.args['--force-latest'] or app_info['code'] == 'latest':
-            app_package_name, app_version_code = \
-                _xml_get_application_info(application, 'latest')
-        else:
-            app_package_name, app_version_code = \
-                _xml_get_application_info(application, app_info['code'])
+        warnings_found = True
 
-        if not app_package_name:
-            print(' - no package: %s:%s' % (app_info['name'], app_info['code']))
-            warnings_count += 1
-            del repo_apps[key]
-            continue
-
-        app_info['package_name'] = "%s" % app_package_name
-        app_info['package_url'] = "%s/%s" % \
-                                  (repo_info['base_url'], app_package_name)
-
-        if app_info['code'] == 'latest':
-            app_info['code'] = int(app_version_code)
-
-        print(' - found: %s:%s' % (app_info['name'], app_info['code']))
-
-    if warnings_count and not input_confirm('Warnings found! Continue?'):
+    # Give the user a chance to fix any possible errors.
+    if warnings_found and not input_confirm('Warnings found! Continue?'):
         sys.exit(1)
 
-    return repo_apps
+    return apps_list
 
 
-def _xml_get_application_tag(tree_root, target):
-    for tag in tree_root.findall('application'):
-        if tag.get('id') and tag.get('id') == target:
-            return tag
+def _xml_get_app_lock_info(data, app_info):
+    # Get the MIA handler singleton.
+    handler = MiaHandler()
 
-    return None
+    app_name = None
+    app_package_name = None
+    app_version_code = None
+
+    # Use the latest application version code.
+    if handler.args['--force-latest'] or 'code' not in app_info:
+        app_info['code'] = 'latest'
+
+    # Prepare a list of repositories to look into.
+    repositories = [app_info['repo']]
+    if 'fallback' in data[app_info['repo']]:
+        repositories.append(data[app_info['repo']]['fallback'])
+
+    for repo in repositories:
+        for tag in data[repo]['tree'].findall('application'):
+            if tag.get('id') and tag.get('id') == app_info['name']:
+                app_name, app_package_name, app_version_code = \
+                    _xml_get_app_download_info(tag, app_info['code'])
+
+        # Only try the fallback repository if the application was not found.
+        if app_package_name is not None:
+            break
+
+    if app_package_name is None and app_info['code'] == 'latest':
+        print(' - no such app: %s' % app_info['name'])
+        return None
+    elif app_package_name is None:
+        print(' - no package: %s:%s' % (app_info['name'], app_info['code']))
+        return None
+
+    return {
+        'name': app_name,
+        'repository_id': repo,
+        'package_name': app_package_name,
+        'package_code': int(app_version_code),
+        'package_url': urljoin(data[repo]['url'], app_package_name),
+    }
 
 
-def _xml_get_application_info(tag, target):
+def _xml_get_app_download_info(tag, target_code):
     name = None
-    code = None
+    apkname = None
+    versioncode = None
 
     package = None
-    if target == 'latest':
+    if target_code == 'latest':
         package = tag.find('package')
     else:
         for item in tag.findall('package'):
             version_code = item.find('versioncode').text
-            if int(version_code) == int(target):
+            if int(version_code) == int(target_code):
                 package = item
                 break
 
     if package is not None:
-        name = package.find('apkname').text
-        code = package.find('versioncode').text
+        name = tag.find('name').text
+        apkname = package.find('apkname').text
+        versioncode = package.find('versioncode').text
 
-    return name, code
+    return name, apkname, versioncode
 
 
 def download_apps():
@@ -315,14 +354,15 @@ def download_apps():
         print('Downloading %s...' % repo_group)
         for apk_info in lock_data[repo_group]:
             print(' - downloading: %s' % apk_info['package_url'])
-            download_dir = apk_info.get('path', "user-apps")
+            download_dir = apk_info.get('path', 'user-apps')
             download_path = os.path.join(handler.get_definition_path(), download_dir)
             if not os.path.isdir(download_path):
                 os.makedirs(download_path, mode=0o755)
             apk_path = os.path.join(download_path, apk_info['package_name'])
             path, http_message = urlretrieve(apk_info['package_url'], apk_path)
             print('   - downloaded %s' %
-                  format_file_size(http_message["Content-Length"]))
+                  format_file_size(http_message['Content-Length']))
+
 
 def download_os():
     print('\nNOTE: Command not finished yet; See instructions!\n')
@@ -345,8 +385,8 @@ def download_os():
 
     file_name = handler.get_os_zip_filename()
 
-    print("Download CyanogenMod for and save the file as\n - %s\n"
-          "into the resources folder, then verify the file checksum.\n - %s\n"
+    print('Download CyanogenMod for and save the file as\n - %s\n'
+          'into the resources folder, then verify the file checksum.\n - %s\n'
           % (file_name, url))
 
     input_pause('Please follow the instructions before continuing!')
@@ -382,7 +422,7 @@ def extract_update_binary():
         # Save the file; taken from ZipFile.extract
         source = fd.open(update_relative_path)
         destination = os.path.join(definition_path, 'other', 'update-binary')
-        target = open(destination, "wb")
+        target = open(destination, 'wb')
         with source, target:
             shutil.copyfileobj(source, target)
 
