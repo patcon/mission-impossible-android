@@ -250,11 +250,15 @@ def get_apps_lock_info():
             apps_list.append(app_info)
             continue
 
-        # Lookup the version code in the repository index.xml.
-        if 'code' in app_info:
+        # Lookup the app by name and versioncode in the repository index.xml.
+        if 'name' in app_info:
             # Use the default repository if no repo has been provided.
             if 'repo' not in app_info:
                 app_info['repo'] = settings['defaults']['repository_id']
+
+            # Use the latest application version code.
+            if handler.args['--force-latest'] or 'code' not in app_info:
+                app_info['code'] = 'latest'
 
             # Get the application info.
             app_info = _xml_get_app_lock_info(repositories_data, app_info)
@@ -275,16 +279,9 @@ def get_apps_lock_info():
 
 
 def _xml_get_app_lock_info(data, app_info):
-    # Get the MIA handler singleton.
-    handler = MiaHandler()
-
     app_name = None
     app_package_name = None
     app_version_code = None
-
-    # Use the latest application version code.
-    if handler.args['--force-latest'] or 'code' not in app_info:
-        app_info['code'] = 'latest'
 
     # Prepare a list of repositories to look into.
     repositories = [app_info['repo']]
