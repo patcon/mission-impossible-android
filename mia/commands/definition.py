@@ -385,6 +385,7 @@ def extract_update_binary():
         target = open(destination, "wb")
         with source, target:
             shutil.copyfileobj(source, target)
+        os.chmod(destination, 0o755)
 
         print('Saved the update-binary to the definition!')
     else:
