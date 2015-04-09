@@ -9,7 +9,8 @@ Usage:
     mia definition lock [--force-latest] <definition>
     mia definition dl-apps <definition>
     mia definition dl-os <definition>
-    mia definition extract-update <definition>
+    mia definition extract-update-binary <definition>
+    mia definition update-from-template <definition>
 
 Command options:
     --template=<template>  The template to use. [default: mia-default]
@@ -28,6 +29,7 @@ import re
 import shutil
 from urllib.request import urlretrieve
 import xml.etree.ElementTree as ElementTree
+import distutils.dir_util
 
 # Import custom helpers.
 from mia.helpers.android import *
@@ -56,6 +58,10 @@ def main():
     # Configure the definition.
     if handler.args['configure']:
         configure_definition()
+
+    # Update definition from template
+    if handler.args['update-from-template']:
+        update_definition()
 
     # Create the apps lock file.
     if handler.args['lock']:
@@ -116,6 +122,25 @@ def create_definition():
         print()
         configure_definition()
 
+def update_definition():
+    # Get the MIA handler singleton.
+    handler = MiaHandler()
+
+    definition_path = handler.get_definition_path()
+    print('Destination directory is:\n - %s\n' % definition_path)
+
+    template = handler.args['--template']
+    template_path = os.path.join(handler.get_root_path(), 'templates', template)
+    print('Using template:\n - %s\n' % template_path)
+
+    # Check if the template exists.
+    if not os.path.exists(template_path):
+        # raise Exception('Template "%s" does not exist!' % template)
+        print('ERROR: Template "%s" does not exist!' % template)
+        sys.exit(1)
+
+    # Create the definition using the provided template.
+    distutils.dir_util.copy_tree(template_path, definition_path)
 
 def configure_definition():
     # Get the MIA handler singleton.
