@@ -44,9 +44,9 @@ ui_print("| 70%  Installing App List      |");
 set_progress(0.7);
 package_extract_dir("sdcard/misc/MyAppList", "/sdcard/MyAppList");
 # Linux UIDs: 0(root), 1028(sdcard_r)
-set_perm_recursive(0, 1028, 0770, 0660, "/sdcard/MyAppList");
+set_perm_recursive(1023, 1023, 0770, 0660, "/sdcard/MyAppList");
 
-ui_print("| 75% Copying misc boot files   |");
+ui_print("| 75%  Copying misc boot files  |");
 set_progress(0.75);
 package_extract_dir("sdcard/misc", "/sdcard/misc");
 set_perm_recursive(1023, 1023, 0770, 0660, "/sdcard/misc");

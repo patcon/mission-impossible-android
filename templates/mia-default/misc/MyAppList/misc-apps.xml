@@ -7,6 +7,7 @@
   <app name="CatLog" package="com.nolanlawson.logcat" />
   <app name="Chat Secure" package="info.guardianproject.otr.app.im" />
   <app name="Cool Reader" package="org.coolreader" />
+  <app name="Document Viewer" package="org.sufficientlysecure.viewer" />
   <app name="FreeOTP" package="org.fedorahosted.freeotp" />
   <app name="Intent Intercept" package="uk.co.ashtonbrsc.android.intentintercept" />
   <app name="KeePass NFC" package="net.lardcave.keepassnfc" />
@@ -25,6 +26,7 @@
   <app name="Fennec Browser" package="org.mozilla.fennec_fdroid" />
   <app name="Firefox Browser" package="org.mozilla.firefox" />
   <app name="Seafile" package="com.seafile.seadroid2" />
+  <app name="Snoop Snitch" package="de.srlabs.snoopsnitch" />
   <app name="VLC" package="org.videolan.vlc" />
   <app name="Xabber XMPP+OTR Chat" package="com.xabber.androiddev" />
 </app-list>
