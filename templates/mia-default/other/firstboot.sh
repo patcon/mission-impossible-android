@@ -61,7 +61,6 @@ $SED -i $MISC_DIR/org.ethack.orwall_nat.sql -e "s/{{REPLACE_WITH_GENERATED_SQL}}
 mkdir -p /data/data/org.ethack.orwall/databases
 /system/xbin/sqlite3 /data/data/org.ethack.orwall/databases/nat.s3db < $MISC_DIR/org.ethack.orwall_nat.sql
 
-
 # Fix permissions for all apps
 for APP in ${APPS[@]}
 do
@@ -105,6 +104,10 @@ am broadcast -a android.intent.action.BOOT_COMPLETED -n org.ethack.orwall/.BootB
 # call into only specific activities of the CM one.
 am start -a android.intent.action.MAIN -n 'com.android.settings/.Settings$DateTimeSettingsActivity'
 
+# Remove setup MISC_DIR
+rm -rf $MISC_DIR
+
+# Remove self
 rm $0 >> /sdcard/init.log
 
 # XXX: Seems to fail? causes a reboot loop when enabled, and will mess with
