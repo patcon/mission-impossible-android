@@ -76,7 +76,7 @@ def main():
         download_apps()
 
     # Extract the update-binary from the CyanogenMod zip file.
-    if handler.args['extract-update']:
+    if handler.args['extract-update-binary']:
         extract_update_binary()
 
     return None
