@@ -28,9 +28,13 @@ import re
 import os
 import shutil
 import sys
+import zipfile
 from urllib.request import urlretrieve
 import xml.etree.ElementTree as ElementTree
 from pkg_resources import Requirement, resource_filename, resource_isdir
+
+
+import yaml
 
 # Import custom helpers.
 from mia.helpers.android import *
@@ -193,7 +197,6 @@ def create_apps_lock_file():
     lock_file_path = os.path.join(definition_path, 'apps_lock.yaml')
     print("Creating lock file:\n - %s\n" % lock_file_path)
 
-    import yaml
     fd = open(lock_file_path, 'w')
     try:
         fd.write(yaml.dump(lock_data, default_flow_style=False))
@@ -383,8 +386,6 @@ def extract_update_binary():
     update_relative_path = 'META-INF/com/google/android/update-binary'
 
     print('Extracting the update-binary from:\n - %s' % zip_file_path)
-
-    import zipfile
 
     if os.path.isfile(zip_file_path) and zipfile.is_zipfile(zip_file_path):
         # Extract the update-binary in the definition.
