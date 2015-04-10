@@ -32,16 +32,8 @@ See 'mia help <command>' for more information on a specific command.
 
 """
 
-# Get the path of the mission-impossible-android project.
 import os
-ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-
-# Get the current directory.
-WORKSPACE = os.getcwd()
-
-# Add the script root the the PYTHONPATH environment variable.
 import sys
-sys.path.append(ROOT)
 
 # Import docopt - the command-line interface description language.
 # @see https://github.com/docopt/docopt/releases
@@ -50,6 +42,13 @@ from docopt import docopt
 # Import custom helpers.
 from mia import (__version__)
 from mia.helpers.utils import *
+
+# Get the current directory.
+WORKSPACE = os.getcwd()
+
+# Add the script root the the PYTHONPATH environment variable.
+ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(ROOT)
 
 
 def delegate_command(command_name, command_args):
